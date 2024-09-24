@@ -1,6 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -8,25 +7,29 @@ public class PlayVideo : MonoBehaviour
 {
     // Variable para almacenar el Collider del botón
     private Collider2D botonCollider;
-    [SerializeField] private VideoPlayer video;
+    private string[] videos;
+    [SerializeField] private VideoPlayer pantallaVideo;
 
     void Start()
     {
         botonCollider = GetComponent<Collider2D>();
+
+        // Obtener todos los archivos .mp4 de la carpeta viode
+        videos = Directory.GetFiles("Assets/Video", "*.mp4").Select(Path.GetFullPath).ToArray();
     }
 
     void Update()
     {
-        // Detectar si se hizo clic derecho (botón secundario del ratón)
+        // Detectar si se hizo clic izquierdo
         if (Input.GetMouseButtonDown(0))
         {
-            // Convertir la posición del ratón a coordenadas de mundo
+            // Convertir la posición del ratón a coordenadas
             Vector2 posicionMouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-            // Crear el raycast y verificar si choca con el collider del botón
+            // Verificar si choca con el collider del botón con un raycast
             RaycastHit2D hit = Physics2D.Raycast(posicionMouse, Vector2.zero,100);
 
-            // Comprobar si el raycast colisionó con algo y si fue con el botón
+            // Comprobar si el raycast colisiona con el botón
             if (hit.collider == botonCollider)
             {
                 ActivarBoton();
@@ -35,8 +38,25 @@ public class PlayVideo : MonoBehaviour
     }
 
     // Función que se llama cuando se activa el botón
-    void ActivarBoton()
+    private void ActivarBoton()
     {
-        Debug.Log("Botón activado con clic izquierdo");
+        VideoRandom();
+    }
+
+    // Función para reproducir un video aleatorio
+    private void VideoRandom()
+    {
+        if (videos.Length == 0)
+        {
+            Debug.LogError("No se encontraron videos en la carpeta");
+            return;
+        }
+
+        // Seleccionar un video aleatorio
+        string randomVideo = videos[Random.Range(0, videos.Length)];
+
+        // Cargar el video en el VideoPlayer
+        pantallaVideo.url = randomVideo;
+        pantallaVideo.Play();
     }
 }
